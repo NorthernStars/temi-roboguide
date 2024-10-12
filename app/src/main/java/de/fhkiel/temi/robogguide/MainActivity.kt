@@ -5,6 +5,8 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.robotemi.sdk.Robot
 import com.robotemi.sdk.TtsRequest
@@ -12,13 +14,14 @@ import com.robotemi.sdk.listeners.OnRobotReadyListener
 import de.fhkiel.temi.robogguide.database.DatabaseHelper
 import java.io.IOException
 
+// ADB Connect (ip address)
 class MainActivity : AppCompatActivity(), OnRobotReadyListener {
     private var mRobot: Robot? = null
     private lateinit var database: DatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.first_screen)
 
         // use database
         val databaseName = "roboguide.db"
@@ -36,39 +39,23 @@ class MainActivity : AppCompatActivity(), OnRobotReadyListener {
 
             val places = database.getTableDataAsJson("places") // Fetch data as JSON
             val locations = database.getTableDataAsJson("locations") // Fetch data as JSON
+            val texts = database.getTableDataAsJson("texts") // Fetch data as JSON
+
             Log.i("MainActivity", "Places: $places")
             Log.i("MainActivity", "Locations: $locations")
+            Log.i("texts", "Locations: $texts")
 
         } catch (e: IOException) {
             e.printStackTrace()
         }
 
-        // let robot speak on button click
-        findViewById<Button>(R.id.btnSpeakHelloWorld).setOnClickListener {
-            speakHelloWorld("Hello World!")
-        }
-
-        findViewById<Button>(R.id.btnSpeakLocations).setOnClickListener {
-            speakLocations()
-        }
-
-        findViewById<Button>(R.id.btnCancelSpeak).setOnClickListener {
-            mRobot?.cancelAllTtsRequests()
-        }
-
-        findViewById<Button>(R.id.btnGotoHomeBase).setOnClickListener {
-            gotoHomeBase()
-        }
-
-        findViewById<Button>(R.id.btnExitApp).setOnClickListener {
-            finishAffinity()
-        }
     }
 
     override fun onStart() {
         super.onStart()
         Robot.getInstance().addOnRobotReadyListener(this)
     }
+
 
     override fun onStop() {
         super.onStop()
@@ -85,11 +72,26 @@ class MainActivity : AppCompatActivity(), OnRobotReadyListener {
             mRobot = Robot.getInstance()
             mRobot?.hideTopBar()        // hide top action bar
 
+
+
             // hide pull-down bar
             val activityInfo: ActivityInfo = packageManager.getActivityInfo(componentName, PackageManager.GET_META_DATA)
             Robot.getInstance().onStart(activityInfo)
 
+
+            findViewById<Button>(R.id.individual).setOnClickListener {
+                setContentView(R.layout.all_locations)
+                val layout = findViewById<LinearLayout>(R.id.listoflocations)
+                val locationButtonManager = LocationButtonManager(this, mRobot)
+                locationButtonManager.populateLocationButtons(layout)
+            }
+
+            Log.i("Robot", mRobot?.locations.toString())
+            //mRobot?.let { robot -> robot.addOnGoToLocationStatusChangedListener(RoundTrip(robot)); }
+            //mRobot?.goTo(mRobot?.locations?.get(0) ?: "");
+
         }
+
     }
 
     private fun speakHelloWorld(text: String, isShowOnConversationLayer: Boolean = true){

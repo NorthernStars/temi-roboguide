@@ -148,4 +148,12 @@ class DatabaseHelper(context: Context, private val databaseName: String) : SQLit
 
         return jsonMap
     }
+
+
+    @Suppress("unused")
+    fun saveDataToTable() {
+        database?.let { db ->{
+            db.rawQuery("INSERT INTO texts (title,text,detailed)", null)
+        } }
+    }
 }
