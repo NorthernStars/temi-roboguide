@@ -1,11 +1,18 @@
-package de.fhkiel.temi.robogguide
+package de.fhkiel.temi.robogguide.triplogic
 
 import android.util.Log
+import android.widget.ProgressBar
 import com.robotemi.sdk.Robot
 import com.robotemi.sdk.TtsRequest
 import com.robotemi.sdk.listeners.OnGoToLocationStatusChangedListener
 
-class RoundTrip(private val mRobot: Robot) : OnGoToLocationStatusChangedListener {
+class RoundTrip(
+    private val mRobot: Robot,
+    private val bar: ProgressBar,
+    private val allStations: Boolean= false,
+    private val isAusführlich: Boolean = false,
+    var index: Int =0
+) : OnGoToLocationStatusChangedListener {
 
     init {
         mRobot.goTo(mRobot.locations[0])
@@ -15,13 +22,11 @@ class RoundTrip(private val mRobot: Robot) : OnGoToLocationStatusChangedListener
         location: String,
         status: String,
         descriptionId: Int,
-        description: String
-    ) {
+        description: String) {
         if(status == OnGoToLocationStatusChangedListener.COMPLETE) {
-            val x = (mRobot.locations.indexOf(location) + 1) % mRobot.locations.size;
-            // mRobot.goTo(mRobot.locations[x]);
             val ttsRequest: TtsRequest = TtsRequest.create(speech = "location: $location", isShowOnConversationLayer = false);
-            mRobot.speak(ttsRequest);
+            mRobot.speak(ttsRequest)
+            bar.progress = index * 100/mRobot.locations.size
         }
         Log.i(location, status);
 

@@ -4,18 +4,15 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.robotemi.sdk.Robot
-import com.robotemi.sdk.TtsRequest
 import com.robotemi.sdk.listeners.OnRobotReadyListener
 import de.fhkiel.temi.robogguide.database.DatabaseHelper
+import de.fhkiel.temi.robogguide.pages.InitialScreen
 import java.io.IOException
 
 // ADB Connect (ip address)
-class MainActivity : AppCompatActivity(), OnRobotReadyListener {
+    class MainActivity : AppCompatActivity(), OnRobotReadyListener {
     private var mRobot: Robot? = null
     private lateinit var database: DatabaseHelper
 
@@ -70,49 +67,17 @@ class MainActivity : AppCompatActivity(), OnRobotReadyListener {
     override fun onRobotReady(isReady: Boolean) {
         if (isReady){
             mRobot = Robot.getInstance()
-            mRobot?.hideTopBar()        // hide top action bar
+            mRobot?.hideTopBar()
 
-
-
-            // hide pull-down bar
             val activityInfo: ActivityInfo = packageManager.getActivityInfo(componentName, PackageManager.GET_META_DATA)
             Robot.getInstance().onStart(activityInfo)
-
-
-            findViewById<Button>(R.id.individual).setOnClickListener {
-                setContentView(R.layout.all_locations)
-                val layout = findViewById<LinearLayout>(R.id.listoflocations)
-                val locationButtonManager = LocationButtonManager(this, mRobot)
-                locationButtonManager.populateLocationButtons(layout)
-            }
-
+            mRobot?.let { robot-> run {
+                val initScreen: InitialScreen = InitialScreen(this,  robot);
+                initScreen.handleInitScreen();
+            } }
             Log.i("Robot", mRobot?.locations.toString())
-            //mRobot?.let { robot -> robot.addOnGoToLocationStatusChangedListener(RoundTrip(robot)); }
             //mRobot?.goTo(mRobot?.locations?.get(0) ?: "");
 
         }
-
     }
-
-    private fun speakHelloWorld(text: String, isShowOnConversationLayer: Boolean = true){
-        mRobot?.let { robot ->
-            val ttsRequest: TtsRequest = TtsRequest.create(speech = text, isShowOnConversationLayer = isShowOnConversationLayer)
-            robot.speak(ttsRequest)
-        }
-    }
-
-    private fun speakLocations(){
-        mRobot?.let { robot ->
-            var text = "Das sind alle Orte an die ich gehen kann:"
-            robot.locations.forEach {
-                text += " $it,"
-            }
-            speakHelloWorld(text, isShowOnConversationLayer = false)
-        }
-    }
-
-    private fun gotoHomeBase(){
-        mRobot?.goTo(location = "home base")
-    }
-
 }
