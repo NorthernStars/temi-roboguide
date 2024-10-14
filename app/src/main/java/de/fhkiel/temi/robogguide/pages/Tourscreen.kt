@@ -3,6 +3,7 @@ package de.fhkiel.temi.robogguide.pages
 import android.app.Activity
 import android.widget.Button
 import android.widget.ProgressBar
+import android.widget.TextView
 import com.robotemi.sdk.Robot
 import com.robotemi.sdk.TtsRequest
 import de.fhkiel.temi.robogguide.R
@@ -13,14 +14,19 @@ class Tourscreen(private val context: Activity,
                  private val handleInitScreen: () -> Unit,
                  private val allStations: Boolean= false,
                  private val isAusführlich: Boolean = false,
+                 private val locations : List<String> = robot.locations,
+                 private val isIndividual: Boolean = false
 ) {
 
      fun handleTourScreen() {
         context.setContentView(R.layout.tour_screen)
         val bar = context.findViewById<ProgressBar>(R.id.progressBar)
 
-        val trip = RoundTrip(robot, bar, allStations, isAusführlich, 0)
+        val trip = RoundTrip(robot, bar, allStations, isAusführlich, isIndividual, 0, locations, context)
         robot.addOnGoToLocationStatusChangedListener(trip)
+
+         val text = context.findViewById<TextView>(R.id.error_text);
+
 
         val backButton = context.findViewById<Button>(R.id.backbutton)
         backButton.setOnClickListener {
@@ -31,8 +37,8 @@ class Tourscreen(private val context: Activity,
         val continueButton = context.findViewById<Button>(R.id.continuebutton)
         continueButton.setOnClickListener{
             robot.cancelAllTtsRequests();
-            trip.index = (trip.index+1) % robot.locations.size
-            robot.goTo(robot.locations[trip.index]);
+            trip.index = (trip.index+1) % locations.size
+            robot.goTo(locations[trip.index]);
         }
     }
 
@@ -40,7 +46,7 @@ class Tourscreen(private val context: Activity,
         context.setContentView(R.layout.first_screen)
 
         robot.removeOnGoToLocationStatusChangedListener(trip)
-        robot.goTo(robot.locations.getOrNull(0) ?: "")
+        robot.goTo(robot.locations[0])
         val ttsRequest = TtsRequest.create(
             speech = "Okay! Ich gehe dann wieder zum Anfang. Viel Spaß im Museum!",
             isShowOnConversationLayer = false

@@ -4,7 +4,7 @@ import android.app.Activity
 import android.widget.Button
 import android.widget.LinearLayout
 import com.robotemi.sdk.Robot
-import de.fhkiel.temi.robogguide.LocationButtonManager
+import de.fhkiel.temi.robogguide.LocationToggleManager
 import de.fhkiel.temi.robogguide.R
 
 class IndividualTourScreen(
@@ -13,16 +13,22 @@ class IndividualTourScreen(
                         private val handleInitScreen: () -> Unit) {
 
     public fun handleIndivTourScreen() {
-        activity.setContentView(R.layout.all_locations)
+        activity.setContentView(R.layout.individual_tour_planner)
 
         val layout = activity.findViewById<LinearLayout>(R.id.listoflocations)
-        val locationButtonManager = LocationButtonManager(activity, mRobot)
-        locationButtonManager.populateLocationButtons(layout)
+        val locationToggleManager = LocationToggleManager(activity, mRobot)
+        locationToggleManager.populateLocationToggles(layout)
 
         val back = activity.findViewById<Button>(R.id.backbuttonindiv)
         back.setOnClickListener {
 
             handleInitScreen()
+        }
+
+        val startTour: Button = activity.findViewById(R.id.start_individual_tour)
+        startTour.setOnClickListener{
+            val tour = Tourscreen(activity, mRobot, handleInitScreen, allStations = true, isAusführlich = true, locationToggleManager.toggledList, isIndividual= true)
+            tour.handleTourScreen()
         }
     }
 }
